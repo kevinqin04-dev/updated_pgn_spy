@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <iostream>
-#include <ctime>
+#include <string>
 #include "imports/imports.h"
 #include "analysis/analysis.h"
 #include "reports/reports.h"
@@ -24,6 +24,10 @@ int main(int argc, char *argv[]) {
         string website = argv[3];
         string startDate = argv[4];
         string endDate = argv[5];
+        if(username == "N/A") {
+            cerr << "Username is required for 'import' mode." << endl;
+            return -1;
+        }
         imports::importGames(username, website, startDate, endDate);
     } else if(mode == "file") {
         if(argc < 4) {
@@ -31,7 +35,7 @@ int main(int argc, char *argv[]) {
             return -1;
         }
         string filePath = argv[3];
-        // analysis::analyze_games(username, filePath);
+        // analysis::analyze_games(username, filePath); //to be completed
     } else {
         cerr << "Invalid mode. Please use 'import' or 'file'." << endl;
     }

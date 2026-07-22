@@ -10,4 +10,5 @@ Currently there are two planned modes for the start of a program:
     b. .pgn file path
 For both modes, there should be the option to either analyze one specific player (or username) or analyze both sides for each game -- for the purpose of creating benchmarks.
 > The first command line argument will dictate which import mode we are using, and either give the path for the .pgn file, or the website, username, and other data for importing games.
-> Second argument will be the username regardless of mode, with 'n/a' used for analyzing both sides of given games, since that cannot be a username on chess.com or lichess.org.
+> Second argument will be the username regardless of mode, with 'n/a' used for analyzing both sides of given games, since that cannot be a username on chess.com or lichess.org. 
+    We can only have no username listed for mode 2. Potential ability to add a modifier to import mode to import games from a given link, but this will likely need to be a feature to look into after the complention of our MVP.
