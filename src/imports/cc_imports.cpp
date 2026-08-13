@@ -1,6 +1,6 @@
 
 
-namespace chess {
+namespace chesscom {
 
     
 }
