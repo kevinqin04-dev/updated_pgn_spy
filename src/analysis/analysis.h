@@ -1,5 +1,5 @@
 #include <vector>
 using namespace std; 
 namespace analysis{
-    vector<string> analyzeGame(const string& filepath); 
+    vector<vector<int>> analyzeGame(const string& filepath, int depth); 
 }

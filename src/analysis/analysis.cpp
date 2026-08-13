@@ -14,11 +14,15 @@ bp::ipstream out;
 class MyVisitor : public pgn::Visitor {
 public:
     chess::Board board;
-    vector<string> moves;
+    vector<string> moves = {};
+    vector<vector<string>> games; 
     virtual ~MyVisitor() {}
     
     void startPgn() override {
-        
+        board = chess::Board();
+         
+        moves.clear(); 
+
     }
 
     void header(std::string_view key, std::string_view value) {
@@ -39,15 +43,16 @@ public:
 
     void endPgn() {
         // Cleanup code
+        games.push_back(moves);
     }
 };
 namespace analysis {
     
 
-    vector<string> analyzeGame(const string& filepath){
+    vector<vector<int>> analyzeGame(const string& filepath, int depth){
         bp::child engine("/usr/games/stockfish", bp::std_in < in, bp::std_out > out); 
         vector<int> res1(4); 
-        
+        vector<vector<int>> finalres; 
         // res[0] is # of T1 moves, res[1] is T2 moves, ... and res[3] is the # of moves that isn't in the top 3
         ifstream pgnstream(filepath); 
         
@@ -57,43 +62,67 @@ namespace analysis {
         MyVisitor visitor;
         pgn::StreamParser parser(pgnstream); 
         auto error = parser.readGames(visitor); 
-        string game = "position startpos moves"; 
-        vector<string> res; 
+        in << "setoption name MultiPV value 3" << endl;
+        for(auto& game1: visitor.games){
+            string game = "position startpos moves"; 
+            vector<string> res = {}; 
         
-        in << "setoption name MultiPV value 3" << endl; 
-        for(int i = 0; i < visitor.moves.size()-1; ++i){
-            //we dont analyze the last move because the game will already be over
-            game += " "+visitor.moves[i];
-            in << game << endl; 
-            in << "go depth 10" << endl; 
-            std::string line;
+         
         
-            int count = 0; 
-            while (getline(out, line)) {
+            for(int i = 0; i < game1.size(); ++i){
             
-                if (line.substr(0, 13) == "info depth 10") {
-                    res.push_back(line.substr(line.find(" pv ")+4, 4)); 
-                    count++; 
-                    string nextmove = visitor.moves[i+1];
-                    string engineMove = res[res.size()-1];
-                    if(engineMove == nextmove){
-                        res1[count-1]++; 
-                    }
+                //we dont analyze the last move because the game will already be over
+            
+            
+            
+            
+                in << game << endl; 
+                in << "go depth "<< to_string(depth) << endl; 
+                std::string line;
+        
+                int count = 0; 
+                while (getline(out, line)) {
+            
+                    if (line.substr(0, 11+to_string(depth).size()) == "info depth "+to_string(depth)) {
+                        
+                        
+                        int start = line.find(" pv ")+4;
+                        int end = line.find(' ', start);
+                        
+                        
+                        res.push_back(line.substr(start, -start+end)); 
+                        count++; 
+                        string nextmove = game1[i];
+                        string engineMove = res[res.size()-1];
+                        if(engineMove == nextmove){
+                            res1[count-1]++; 
+                        }    
                     
-                    if(count == 3){
-                        break; 
+                    
                     }
-                }   
+                    if (line.substr(0, 8) == "bestmove") {
+                        break;
+                    }   
                 
             
+                }
+                game += " "+game1[i];
+                // this guy is at the end so we can analyze whether the first move is in the top 1-3 moves of the engine
+
             }
+            res1[3] = game1.size()-res1[0]-res1[1]-res1[2];
+            finalres.push_back(res1);
+            for(int i = 0; i < 4; i++){
+                res1[i] = 0; 
+            }
+
         }
         in << "quit" << endl; 
         engine.wait(); 
-        for(int& x: res1){
-            res.push_back(to_string(x)); 
-        }
-        return res; //right now it just converts a pgn file to uci moves
+        
+        
+        
+        return finalres; //right now it just converts a pgn file to uci moves
     }
     
 }
