@@ -8,6 +8,16 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
+    // testing
+
+    vector<string> res= analysis::analyzeGame("../pgnfiles/game.pgn"); 
+    for(string s: res){
+        cout<< s << endl; 
+    }
+    return 0; 
+    // testing
+    
+    
     if(argc < 3) {
         cerr << "Not enough arguments, please provide a mode and username." << endl;
         return -1;
