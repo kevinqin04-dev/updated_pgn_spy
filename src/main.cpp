@@ -8,14 +8,16 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-    // testing
+    /*
+    //testing
 
     vector<string> res= analysis::analyzeGame("../pgnfiles/game.pgn"); 
     for(string s: res){
         cout<< s << endl; 
     }
     return 0; 
-    // testing
+    //testing
+    */
     
     
     if(argc < 3) {
