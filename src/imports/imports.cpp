@@ -52,7 +52,7 @@ namespace imports {
             
         } 
         if(website == "lichess"){
-            command = "curl -H \"User-Agent: USER AGENT\" -H \"Accept: application/x-chess-pgn\"  \"https://lichess.org/api/games/user/"+ username+"?since="+to_string(toMillis(startDate))+"&until="+to_string(toMillis(endDate))+"&sort=dateAsc\" >> ../pgnfiles/" +username+".pgn"; 
+            command = "curl -H \"User-Agent: USER AGENT\" -H \"Accept: application/x-chess-pgn\"  \"https://lichess.org/api/games/user/"+ username+"?since="+to_string(toMillis(startDate))+"&until="+to_string(toMillis(endDate))+"&sort=dateAsc&clocks=true\" >> ../pgnfiles/" +username+".pgn"; 
             system(command.c_str()); 
         } 
         

@@ -16,17 +16,34 @@ public:
     chess::Board board;
     vector<string> moves = {};
     vector<vector<string>> games; 
+    vector<vector<int>> allWhiteMoveTimes = {}; 
+    vector<vector<int>> allBlackMoveTimes = {}; 
+    vector<int> whiteMoveTimes = {}; 
+    vector<int> blackMoveTimes = {}; 
+
     virtual ~MyVisitor() {}
     
+    int totalTime = 0; 
+    int increment = 0; 
+    int count = 0; 
+    int prevWhite;
+    int prevBlack; 
+
     void startPgn() override {
         board = chess::Board();
-         
+        count = 0; 
+        
         moves.clear(); 
 
     }
 
     void header(std::string_view key, std::string_view value) {
-        // Process header tags
+        if(key == "TimeControl"){
+            int pos = value.find('+');
+
+            totalTime = stoi(static_cast<string>(value.substr(0, pos)));
+            increment = stoi(static_cast<string>(value.substr(pos + 1))); 
+        }
     }
 
     void startMoves() {
@@ -34,6 +51,36 @@ public:
     }
 
     void move(std::string_view move, std::string_view comment) {
+        count++; 
+        int pos = comment.find("\%clk ")+5; 
+        //HOURS MUST BE BETWEEN 0 AND 9! NO ONE IS PLAYING 10+ HOUR CHESS GAMES!
+        int hours = stoi(static_cast<string>(comment.substr(pos, 1))); 
+        int minutes = stoi(static_cast<string>(comment.substr(pos+2,2)));
+        int seconds = stoi(static_cast<string>(comment.substr(pos+5,2))); 
+        seconds = seconds + minutes*60 + hours * 3600; 
+        
+        if(count % 2 == 1){
+            if(whiteMoveTimes.size() == 0){
+                whiteMoveTimes.push_back(totalTime-seconds+increment);
+                prevWhite = seconds; 
+
+            } else{
+                whiteMoveTimes.push_back(prevWhite - seconds + increment); 
+                prevWhite = seconds;
+            }
+            cout << "White took " << to_string(whiteMoveTimes[whiteMoveTimes.size()-1]) << " seconds on this move " << endl;  
+        }
+        if(count % 2 == 0){
+            if(blackMoveTimes.size() == 0){
+                blackMoveTimes.push_back(totalTime-seconds+increment);
+                prevBlack = seconds; 
+
+            } else{
+                blackMoveTimes.push_back(prevBlack - seconds + increment); 
+                prevBlack = seconds;
+            }
+            cout << "Black took " << to_string(blackMoveTimes[blackMoveTimes.size()-1]) << " seconds on this move " << endl;  
+        }
         chess::Move m = chess::uci::parseSan(board, move);
         string uciMove = chess::uci::moveToUci(m);
         moves.push_back(uciMove);
@@ -44,6 +91,11 @@ public:
     void endPgn() {
         // Cleanup code
         games.push_back(moves);
+        allBlackMoveTimes.push_back(blackMoveTimes); 
+        allWhiteMoveTimes.push_back(whiteMoveTimes);
+        blackMoveTimes.clear(); 
+        whiteMoveTimes.clear(); 
+        cout << "Game parsed." << endl; 
     }
 };
 namespace analysis {
@@ -63,6 +115,7 @@ namespace analysis {
         pgn::StreamParser parser(pgnstream); 
         auto error = parser.readGames(visitor); 
         in << "setoption name MultiPV value 3" << endl;
+        cout << visitor.totalTime << "TOTAL TIME" << visitor.increment << "INCREMENT" << endl; 
         for(auto& game1: visitor.games){
             string game = "position startpos moves"; 
             vector<string> res = {}; 
