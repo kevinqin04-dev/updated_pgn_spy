@@ -8,11 +8,11 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-    /*
+    
     //testing
-    imports::importGames("SindarovGM", "lichess", "2026/07", "2026/08"); 
+    //imports::importGames("SindarovGM", "lichess", "2026/07", "2026/08"); 
     // the dates are on the 1st of the month. So for this one it would be July 1st-August 1st 
-    vector<vector<int>> res= analysis::analyzeGame("../pgnfiles/game.pgn", 5); 
+    vector<vector<int>> res= analysis::analyzeGame("../pgnfiles/game.pgn", 5, true); 
     for(vector<int> s: res){
         for(int i = 0; i < s.size(); i++){
             cout << s[i]  << " "; 
@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     }
     return 0; 
     //testing
-    */
+    
     
     
     

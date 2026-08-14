@@ -49,7 +49,7 @@ public:
 namespace analysis {
     
 
-    vector<vector<int>> analyzeGame(const string& filepath, int depth){
+    vector<vector<int>> analyzeGame(const string& filepath, int depth, bool white){
         bp::child engine("/usr/games/stockfish", bp::std_in < in, bp::std_out > out); 
         vector<int> res1(4); 
         vector<vector<int>> finalres; 
@@ -70,7 +70,13 @@ namespace analysis {
          
         
             for(int i = 0; i < game1.size(); ++i){
-            
+                if(white && i % 2 != 0){
+                    game += " "+game1[i];
+                    continue; 
+                } else if(!white && i % 2 == 0){
+                    game += " "+game1[i]; 
+                    continue; 
+                }
                 //we dont analyze the last move because the game will already be over
             
             
@@ -81,6 +87,7 @@ namespace analysis {
                 std::string line;
         
                 int count = 0; 
+                bool NotTop3 = true; 
                 while (getline(out, line)) {
             
                     if (line.substr(0, 11+to_string(depth).size()) == "info depth "+to_string(depth)) {
@@ -95,12 +102,16 @@ namespace analysis {
                         string nextmove = game1[i];
                         string engineMove = res[res.size()-1];
                         if(engineMove == nextmove){
-                            res1[count-1]++; 
+                            res1[count-1]++;
+                            NotTop3 = false; 
                         }    
                     
                     
                     }
                     if (line.substr(0, 8) == "bestmove") {
+                        if(NotTop3){
+                            res1[3]++; 
+                        }
                         break;
                     }   
                 
@@ -110,7 +121,7 @@ namespace analysis {
                 // this guy is at the end so we can analyze whether the first move is in the top 1-3 moves of the engine
 
             }
-            res1[3] = game1.size()-res1[0]-res1[1]-res1[2];
+            
             finalres.push_back(res1);
             for(int i = 0; i < 4; i++){
                 res1[i] = 0; 
