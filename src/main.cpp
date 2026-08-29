@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
     //testing
     //imports::importGames("meth", "chess.com", "2026/07", "2026/08"); 
     // the dates are on the 1st of the month. So for this one it would be July 1st-August 1st 
-    auto res1= analysis::analyzeGame("../pgnfiles/game.pgn", 5, "doppelgangsterr");
+    auto res1 = analysis::analyzeGame("../pgnfiles/game.pgn", 5, "doppelgangsterr");
     vector<vector<int>> res= res1.second;
     auto movetimes = res1.first; 
     for(vector<int> s: res){
