@@ -4,7 +4,7 @@
 #include <boost/process.hpp>
 #include "analysis.h"
 #include <fstream>
-
+#include <cctype>
 #include "chess.hpp"
 namespace bp = boost::process; 
 using namespace std;
@@ -15,11 +15,12 @@ class MyVisitor : public pgn::Visitor {
 public:
     chess::Board board;
     vector<string> moves = {};
-    vector<vector<string>> games; 
+    vector<pair<bool, vector<string>>> games; 
     vector<vector<int>> allWhiteMoveTimes = {}; 
     vector<vector<int>> allBlackMoveTimes = {}; 
     vector<int> whiteMoveTimes = {}; 
     vector<int> blackMoveTimes = {}; 
+    string username; 
 
     virtual ~MyVisitor() {}
     
@@ -28,12 +29,17 @@ public:
     int count = 0; 
     int prevWhite;
     int prevBlack; 
+    bool UserIsWhite; 
+
+    vector<vector<int>> allUserMoveTimes = {}; 
+
 
     void startPgn() override {
         board = chess::Board();
         count = 0; 
         
         moves.clear(); 
+        UserIsWhite = false; 
 
     }
 
@@ -43,6 +49,10 @@ public:
 
             totalTime = stoi(static_cast<string>(value.substr(0, pos)));
             increment = stoi(static_cast<string>(value.substr(pos + 1))); 
+        } else if(key == "White"){
+            if(value == username){
+                UserIsWhite = true; 
+            }
         }
     }
 
@@ -68,7 +78,7 @@ public:
                 whiteMoveTimes.push_back(prevWhite - seconds + increment); 
                 prevWhite = seconds;
             }
-            cout << "White took " << to_string(whiteMoveTimes[whiteMoveTimes.size()-1]) << " seconds on this move " << endl;  
+              
         }
         if(count % 2 == 0){
             if(blackMoveTimes.size() == 0){
@@ -79,7 +89,7 @@ public:
                 blackMoveTimes.push_back(prevBlack - seconds + increment); 
                 prevBlack = seconds;
             }
-            cout << "Black took " << to_string(blackMoveTimes[blackMoveTimes.size()-1]) << " seconds on this move " << endl;  
+            
         }
         chess::Move m = chess::uci::parseSan(board, move);
         string uciMove = chess::uci::moveToUci(m);
@@ -90,10 +100,15 @@ public:
 
     void endPgn() {
         // Cleanup code
-        games.push_back(moves);
+        games.push_back({UserIsWhite, moves});
         allBlackMoveTimes.push_back(blackMoveTimes); 
         allWhiteMoveTimes.push_back(whiteMoveTimes);
-        blackMoveTimes.clear(); 
+        if(UserIsWhite){
+            allUserMoveTimes.push_back(whiteMoveTimes);
+        } else {
+            allUserMoveTimes.push_back(blackMoveTimes); 
+        }
+        blackMoveTimes.clear();  
         whiteMoveTimes.clear(); 
         cout << "Game parsed." << endl; 
     }
@@ -101,7 +116,8 @@ public:
 namespace analysis {
     
 
-    vector<vector<int>> analyzeGame(const string& filepath, int depth, bool white){
+    pair<vector<vector<int>>, vector<vector<int>>> analyzeGame(const string& filepath, int depth, const string& user){
+        
         bp::child engine("/usr/games/stockfish", bp::std_in < in, bp::std_out > out); 
         vector<int> res1(4); 
         vector<vector<int>> finalres; 
@@ -112,11 +128,15 @@ namespace analysis {
             throw std::runtime_error("No PGN file"); 
         }
         MyVisitor visitor;
+        visitor.username = user; 
         pgn::StreamParser parser(pgnstream); 
         auto error = parser.readGames(visitor); 
         in << "setoption name MultiPV value 3" << endl;
         cout << visitor.totalTime << "TOTAL TIME" << visitor.increment << "INCREMENT" << endl; 
-        for(auto& game1: visitor.games){
+        bool white; 
+        for(auto& game2: visitor.games){
+            auto game1 = game2.second; 
+            white = game2.first; 
             string game = "position startpos moves"; 
             vector<string> res = {}; 
         
@@ -186,7 +206,7 @@ namespace analysis {
         
         
         
-        return finalres; //right now it just converts a pgn file to uci moves
+        return {visitor.allUserMoveTimes, finalres}; //right now it just converts a pgn file to uci moves
     }
     
 }
