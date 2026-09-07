@@ -2,18 +2,65 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <algorithm>
 #include "imports/imports.h"
 #include "analysis/analysis.h"
 #include "analysis/benchmark.h"
 #include "reports/reports.h"
 
 using namespace std;
-
+double percentile(vector<double> v1, double val) {
+    
+    auto it = upper_bound(v1.begin(), v1.end(), val);
+    int count = distance(v1.begin(), it);
+    
+    return ((double)count / v1.size()) * 100.0;
+}
 int main(int argc, char *argv[]) {
     
     //testing
     //imports::importGames("meth", "chess.com", "2026/07", "2026/08"); 
     // the dates are on the 1st of the month. So for this one it would be July 1st-August 1st 
+    auto res0 = analysis::analyzeGame("../pgnfiles/doppelgangsterr.pgn", 1, "doppelgangsterr"); 
+    vector<vector<int>> userevals = res0.second;
+    vector<double> Ufirstmoves; 
+    vector<double> Usecondmoves; 
+    vector<double> Uthirdmoves; 
+    vector<double> Unonemoves;
+    for(vector<int> p : userevals){
+        double total = p[0]+p[1]+p[2]+p[3]; 
+        if(total == 0){
+            continue; 
+        }
+        Ufirstmoves.push_back((round(p[0] * 1000.0) / 1000.0f)/total);
+        Usecondmoves.push_back((round(p[1] * 1000.0f) / 1000.0f)/total);
+        Uthirdmoves.push_back((round(p[2] * 1000.0f) / 1000.0f)/total);
+        Unonemoves.push_back((round(p[3] * 1000.0f) / 1000.0f)/total);
+         
+    }
+    vector<double> finalUserResult(4); 
+    for(double x : Ufirstmoves){
+        finalUserResult[0] += x; 
+
+    }
+    finalUserResult[0] /= Ufirstmoves.size();
+    for(double x : Usecondmoves){
+        finalUserResult[1] += x; 
+
+    }
+    finalUserResult[1] /= Usecondmoves.size(); 
+    for(double x : Uthirdmoves){
+        finalUserResult[2] += x; 
+
+    }
+    finalUserResult[2] /= Uthirdmoves.size(); 
+    for(double x : Unonemoves){
+        finalUserResult[3] += x; 
+
+    }
+    finalUserResult[3] /= Unonemoves.size();  
+
+
     vector<vector<vector<int>>> res1 = benchmark::analyzeBenchmark("../pgnfiles/benchmarks.pgn", 1, true);
     vector<double> firstmoves; 
     vector<double> secondmoves; 
@@ -43,9 +90,15 @@ int main(int argc, char *argv[]) {
         nonemoves.push_back((round(p[3] * 1000.0f) / 1000.0f)/total);
          
     }
-    for(double x: firstmoves){
-        cout << x << " "; 
-    }
+    sort(firstmoves.begin(), firstmoves.end()); 
+    sort(secondmoves.begin(), secondmoves.end()); 
+    sort(thirdmoves.begin(), thirdmoves.end());
+    sort(nonemoves.begin(), nonemoves.end()); 
+    double p1 = percentile(firstmoves, finalUserResult[0]);
+    double p2 = percentile(secondmoves, finalUserResult[1]);
+    double p3 = percentile(thirdmoves, finalUserResult[2]);
+    double pNone = percentile(nonemoves, finalUserResult[3]);
+    cout << "\n" << p1 << " " << p2 << " " << p3 << " " << pNone; 
     return 0; 
     //testing
     

@@ -10,7 +10,7 @@ namespace bp = boost::process;
 using namespace std;
 using namespace chess; 
  
-class MyVisitor : public pgn::Visitor {
+class BenchmarkVisitor : public pgn::Visitor {
 public:
     chess::Board board;
     vector<string> moves = {};
@@ -20,7 +20,7 @@ public:
     vector<int> whiteMoveTimes = {}; 
     vector<int> blackMoveTimes = {}; 
 
-    virtual ~MyVisitor() {}
+    virtual ~BenchmarkVisitor() {}
     
     int totalTime = 0; 
     int increment = 0; 
@@ -117,7 +117,7 @@ namespace benchmark {
         if(!pgnstream){
             throw std::runtime_error("No PGN file"); 
         }
-        MyVisitor visitor;
+        BenchmarkVisitor visitor;
         pgn::StreamParser parser(pgnstream); 
         auto error = parser.readGames(visitor); 
         in << "setoption name MultiPV value 3" << endl;
