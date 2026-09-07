@@ -23,6 +23,7 @@ int main(int argc, char *argv[]) {
     // the dates are on the 1st of the month. So for this one it would be July 1st-August 1st 
     auto res0 = analysis::analyzeGame("../pgnfiles/doppelgangsterr.pgn", 1, "doppelgangsterr"); 
     vector<vector<int>> userevals = res0.second;
+    vector<vector<int>> movetimes = res0.first; 
     vector<double> Ufirstmoves; 
     vector<double> Usecondmoves; 
     vector<double> Uthirdmoves; 
@@ -66,7 +67,7 @@ int main(int argc, char *argv[]) {
     vector<double> secondmoves; 
     vector<double> thirdmoves; 
     vector<double> nonemoves;  
-    vector<int> movetimes; 
+     
     for(vector<int> p : res1[0]){
         double total = p[0]+p[1]+p[2]+p[3]; 
         if(total == 0){

@@ -2,6 +2,10 @@
 #include <string>
 #include <iostream>
 #include <boost/process.hpp>
+#include <boost/asio/thread_pool.hpp>
+#include <boost/asio/post.hpp>
+#include <thread>
+#include <algorithm>
 #include "analysis.h"
 #include <fstream>
 #include <cctype>
