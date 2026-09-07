@@ -9,8 +9,26 @@
 #include "analysis/analysis.h"
 #include "analysis/benchmark.h"
 #include "reports/reports.h"
-
+#include <xgboost/c_api.h>
+#include <numeric>
 using namespace std;
+vector<double> getdata(vector<int> times){
+    if(times.empty()){
+        return {0.0, 0.0, 0.0, 0.0, 0.0}; 
+    }
+    double sum = accumulate(times.begin(), times.end(), 0.0);
+    double mean = sum/times.size(); 
+    double stdev = 0.0;
+    for(int i : times){
+        stdev += (i-mean) * (i-mean); 
+    }
+    stdev = sqrt(stdev/times.size()); 
+    sort(times.begin(), times.end()); 
+    double median = times[times.size()/2]; 
+    double min1 = times.front();
+    double max1 = times.back(); 
+    return {mean, stdev, median, min1, max1}; 
+}
 double percentile(vector<double> v1, double val) {
     
     auto it = lower_bound(v1.begin(), v1.end(), val);
@@ -126,6 +144,9 @@ int main(int argc, char *argv[]) {
         cout << i << endl; 
     }
     cout << "\n" << p1 << " " << p2 << " " << p3 << " " << pNone << endl; 
+    BoosterHandle booster; 
+    XGBoosterCreate(NULL, 0, &booster); 
+    XGBoosterLoadModel(booster, "../model.json"); 
 
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);

@@ -3,8 +3,8 @@ project(a)
 
 set(CMAKE_CXX_STANDARD 17)
 
-include_directories(src external/chess-library/include)
+include_directories(src external/chess-library/include xgboost/include)
 
 add_executable(pgn_spy src/main.cpp src/analysis/benchmark.cpp src/analysis/analysis.cpp src/imports/imports.cpp src/imports/cc_imports.cpp src/imports/lc_imports.cpp src/reports/report.cpp)
 
-target_link_libraries(pgn_spy pthread)
+target_link_libraries(pgn_spy pthread ${CMAKE_CURRENT_SOURCE_DIR}/xgboost/lib/libxgboost.a ${CMAKE_CURRENT_SOURCE_DIR}/xgboost/build/dmlc-core/libdmlc.a -fopenmp -ldl)
