@@ -12,7 +12,7 @@
 using namespace std;
 double percentile(vector<double> v1, double val) {
     
-    auto it = upper_bound(v1.begin(), v1.end(), val);
+    auto it = lower_bound(v1.begin(), v1.end(), val);
     int count = distance(v1.begin(), it);
     
     return ((double)count / v1.size()) * 100.0;
@@ -100,6 +100,9 @@ int main(int argc, char *argv[]) {
     double p2 = percentile(secondmoves, finalUserResult[1]);
     double p3 = percentile(thirdmoves, finalUserResult[2]);
     double pNone = percentile(nonemoves, finalUserResult[3]);
+    for(double i: finalUserResult){
+        cout << i << endl; 
+    }
     cout << "\n" << p1 << " " << p2 << " " << p3 << " " << pNone << endl; 
 
     auto stop = std::chrono::high_resolution_clock::now();
