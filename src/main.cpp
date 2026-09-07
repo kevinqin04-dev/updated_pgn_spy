@@ -3,6 +3,7 @@
 #include <string>
 #include <cmath>
 #include <chrono>
+#include <fstream>
 #include <algorithm>
 #include "imports/imports.h"
 #include "analysis/analysis.h"
@@ -22,9 +23,17 @@ int main(int argc, char *argv[]) {
     //testing
     //imports::importGames("meth", "chess.com", "2026/07", "2026/08"); 
     // the dates are on the 1st of the month. So for this one it would be July 1st-August 1st 
-    auto res0 = analysis::analyzeGame("../pgnfiles/doppelgangsterr.pgn", 1, "doppelgangsterr"); 
+    auto res0 = analysis::analyzeGame("../pgnfiles/doppelgangsterr.pgn", 1, "MVChessAI"); 
     vector<vector<int>> userevals = res0.second;
     vector<vector<int>> movetimes = res0.first; 
+    std::ofstream outFile("../cheat_movetimes.txt"); 
+    for (const auto& game : movetimes) {
+        for (int t : game) {
+            outFile << t << " ";
+        }
+        outFile << "\n";
+    }
+    outFile.close();
     vector<double> Ufirstmoves; 
     vector<double> Usecondmoves; 
     vector<double> Uthirdmoves; 
@@ -68,7 +77,20 @@ int main(int argc, char *argv[]) {
     vector<double> secondmoves; 
     vector<double> thirdmoves; 
     vector<double> nonemoves;  
-     
+    std::ofstream f1("../clean_movetimes.txt"); 
+    for (const auto& game : res1[1]) {
+        for (int t : game) {
+            f1 << t << " ";
+        }
+        f1 << "\n";
+    }
+    for (const auto& game : res1[2]) {
+        for (int t : game) {
+            f1 << t << " ";
+        }
+        f1 << "\n";
+    }
+    f1.close(); 
     for(vector<int> p : res1[0]){
         double total = p[0]+p[1]+p[2]+p[3]; 
         if(total == 0){
