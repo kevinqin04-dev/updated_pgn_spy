@@ -34,10 +34,10 @@ int main(int argc, char *argv[]) {
         if(total == 0){
             continue; 
         }
-        Ufirstmoves.push_back((round(p[0] * 1000.0) / 1000.0f)/total);
-        Usecondmoves.push_back((round(p[1] * 1000.0f) / 1000.0f)/total);
-        Uthirdmoves.push_back((round(p[2] * 1000.0f) / 1000.0f)/total);
-        Unonemoves.push_back((round(p[3] * 1000.0f) / 1000.0f)/total);
+        Ufirstmoves.push_back(((round(p[0]/total) * 1000.0) / 1000.0f));
+        Usecondmoves.push_back(((round(p[1]/total) * 1000.0f) / 1000.0f));
+        Uthirdmoves.push_back(((round(p[2]/total) * 1000.0f) / 1000.0f));
+        Unonemoves.push_back(((round(p[3]/total) * 1000.0f) / 1000.0f));
          
     }
     vector<double> finalUserResult(4); 
