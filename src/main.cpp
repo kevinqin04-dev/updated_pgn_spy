@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <iostream>
 #include <string>
+#include <cmath>
 #include "imports/imports.h"
 #include "analysis/analysis.h"
+#include "analysis/benchmark.h"
 #include "reports/reports.h"
 
 using namespace std;
@@ -12,21 +14,37 @@ int main(int argc, char *argv[]) {
     //testing
     //imports::importGames("meth", "chess.com", "2026/07", "2026/08"); 
     // the dates are on the 1st of the month. So for this one it would be July 1st-August 1st 
-    auto res1 = analysis::analyzeGame("../pgnfiles/game.pgn", 5, "doppelgangsterr");
-    vector<vector<int>> res= res1.second;
-    auto movetimes = res1.first; 
-    for(vector<int> s: res){
-        for(int i = 0; i < s.size(); i++){
-            cout << s[i]  << " "; 
+    vector<vector<vector<int>>> res1 = benchmark::analyzeBenchmark("../pgnfiles/benchmarks.pgn", 1, true);
+    vector<double> firstmoves; 
+    vector<double> secondmoves; 
+    vector<double> thirdmoves; 
+    vector<double> nonemoves;  
+    vector<int> movetimes; 
+    for(vector<int> p : res1[0]){
+        double total = p[0]+p[1]+p[2]+p[3]; 
+        if(total == 0){
+            continue; 
         }
-        cout << endl; 
-    } 
-    cout << "movetimes" << endl; 
-    for(vector<int> s: movetimes){
-        for(int i = 0; i < s.size(); i++){
-            cout << s[i]  << " "; 
+        firstmoves.push_back((round(p[0] * 1000.0) / 1000.0f)/total);
+        secondmoves.push_back((round(p[1] * 1000.0f) / 1000.0f)/total);
+        thirdmoves.push_back((round(p[2] * 1000.0f) / 1000.0f)/total);
+        nonemoves.push_back((round(p[3] * 1000.0f) / 1000.0f)/total);
+         
+    }
+    vector<vector<vector<int>>> res2 = benchmark::analyzeBenchmark("../pgnfiles/benchmarks.pgn", 1, false);
+    for(vector<int> p : res2[0]){
+        double total = p[0]+p[1]+p[2]+p[3]; 
+        if(total == 0){
+            continue; 
         }
-        cout << endl; 
+        firstmoves.push_back((round(p[0] * 1000.0) / 1000.0f)/total);
+        secondmoves.push_back((round(p[1] * 1000.0f) / 1000.0f)/total);
+        thirdmoves.push_back((round(p[2] * 1000.0f) / 1000.0f)/total);
+        nonemoves.push_back((round(p[3] * 1000.0f) / 1000.0f)/total);
+         
+    }
+    for(double x: firstmoves){
+        cout << x << " "; 
     }
     return 0; 
     //testing
