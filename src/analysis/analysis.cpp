@@ -123,43 +123,15 @@ public:
     }
 };
 namespace analysis {
-    
-
-    pair<vector<vector<int>>, vector<vector<int>>> analyzeGame(const string& filepath, int depth, const string& user){
-        
-        bp::child engine("/usr/games/stockfish", bp::std_in < in, bp::std_out > out); 
+    vector<int> analyzeOneGame(const vector<string>& game1, bool white, int depth, bp::opstream& in, bp::ipstream& out){
         vector<int> res1(4); 
-        vector<vector<int>> finalres; 
-        // res[0] is # of T1 moves, res[1] is T2 moves, ... and res[3] is the # of moves that isn't in the top 3
-        ifstream pgnstream(filepath); 
-        
-        if(!pgnstream){
-            throw std::runtime_error("No PGN file"); 
-        }
-        MyVisitor visitor;
-        visitor.username = user; 
-        pgn::StreamParser parser(pgnstream); 
-        auto error = parser.readGames(visitor); 
-        in << "setoption name MultiPV value 3" << endl;
-        cout << visitor.totalTime << "TOTAL TIME" << visitor.increment << "INCREMENT" << endl; 
-        bool white; 
-        bool benchmark = false; 
-        if(user == ""){
-            benchmark = true; 
-        }
-        for(auto& game2: visitor.games){
-            auto game1 = game2.second; 
-            white = game2.first; 
-            string game = "position startpos moves"; 
-            vector<string> res = {}; 
-            vector<int> res2(4);
-         
-        
-            for(int i = 0; i < game1.size(); ++i){
-                if(!benchmark&&white && i % 2 != 0){
+        string game = "position startpos moves"; 
+        vector<string> res = {}; 
+        for(int i = 0; i < game1.size(); ++i){
+                if(white && i % 2 != 0){
                     game += " "+game1[i];
                     continue; 
-                } else if(!benchmark && !white && i % 2 == 0){
+                } else if(!white && i % 2 == 0){
                     game += " "+game1[i]; 
                     continue; 
                 }
@@ -207,18 +179,50 @@ namespace analysis {
                 // this guy is at the end so we can analyze whether the first move is in the top 1-3 moves of the engine
 
             }
+        return res1; 
+    }
+
+    pair<vector<vector<int>>, vector<vector<int>>> analyzeGame(const string& filepath, int depth, const string& user){
+        
+        
+        vector<int> res1(4); 
+        
+        // res[0] is # of T1 moves, res[1] is T2 moves, ... and res[3] is the # of moves that isn't in the top 3
+        ifstream pgnstream(filepath); 
+        
+        if(!pgnstream){
+            throw std::runtime_error("No PGN file"); 
+        }
+        MyVisitor visitor;
+        visitor.username = user; 
+        pgn::StreamParser parser(pgnstream); 
+        auto error = parser.readGames(visitor); 
+        
+        vector<vector<int>> finalres(visitor.games.size());
+        
+        
+        
+        cout << visitor.totalTime << "TOTAL TIME" << visitor.increment << "INCREMENT" << endl; 
+     
+        boost::asio::thread_pool pool(8); 
+        for(int i = 0; i < visitor.games.size(); i++){
+            boost::asio::post(pool, [&finalres, &visitor, i, depth](){
+                bp::opstream in;
+                bp::ipstream out;
+                bp::child engine("/usr/games/stockfish", bp::std_in < in, bp::std_out > out);
+                in << "setoption name MultiPV value 3" << endl;
+                finalres[i] = analyzeOneGame(visitor.games[i].second, visitor.games[i].first, depth, in, out);
+                in << "quit"<< endl; 
+                engine.wait(); 
+            }); 
             
-            finalres.push_back(res1);
-            if(benchmark){
-                finalres.push_back(res2); 
-            }
-            for(int i = 0; i < 4; i++){
-                res1[i] = 0; 
-            }
+             
+            
+            
 
         }
-        in << "quit" << endl; 
-        engine.wait(); 
+        pool.join(); 
+        
         
         
         

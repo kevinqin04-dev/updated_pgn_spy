@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <chrono>
 #include <algorithm>
 #include "imports/imports.h"
 #include "analysis/analysis.h"
@@ -17,7 +18,7 @@ double percentile(vector<double> v1, double val) {
     return ((double)count / v1.size()) * 100.0;
 }
 int main(int argc, char *argv[]) {
-    
+    auto start = std::chrono::high_resolution_clock::now();
     //testing
     //imports::importGames("meth", "chess.com", "2026/07", "2026/08"); 
     // the dates are on the 1st of the month. So for this one it would be July 1st-August 1st 
@@ -99,7 +100,12 @@ int main(int argc, char *argv[]) {
     double p2 = percentile(secondmoves, finalUserResult[1]);
     double p3 = percentile(thirdmoves, finalUserResult[2]);
     double pNone = percentile(nonemoves, finalUserResult[3]);
-    cout << "\n" << p1 << " " << p2 << " " << p3 << " " << pNone; 
+    cout << "\n" << p1 << " " << p2 << " " << p3 << " " << pNone << endl; 
+
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+
+    std::cout << "Execution time: " << duration.count() << " ms" << std::endl;
     return 0; 
     //testing
     
