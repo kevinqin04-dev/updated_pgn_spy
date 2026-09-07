@@ -12,21 +12,21 @@
 #include <xgboost/c_api.h>
 #include <numeric>
 using namespace std;
-vector<double> getdata(vector<int> times){
+vector<float> getdata(vector<int> times){
     if(times.empty()){
-        return {0.0, 0.0, 0.0, 0.0, 0.0}; 
+        return {0.0f, 0.0f, 0.0f, 0.0f, 0.0f}; 
     }
-    double sum = accumulate(times.begin(), times.end(), 0.0);
-    double mean = sum/times.size(); 
-    double stdev = 0.0;
+    float sum = accumulate(times.begin(), times.end(), 0.0);
+    float mean = sum/times.size(); 
+    float stdev = 0.0;
     for(int i : times){
         stdev += (i-mean) * (i-mean); 
     }
     stdev = sqrt(stdev/times.size()); 
     sort(times.begin(), times.end()); 
-    double median = times[times.size()/2]; 
-    double min1 = times.front();
-    double max1 = times.back(); 
+    float median = times[times.size()/2]; 
+    float min1 = times.front();
+    float max1 = times.back(); 
     return {mean, stdev, median, min1, max1}; 
 }
 double percentile(vector<double> v1, double val) {
@@ -41,17 +41,11 @@ int main(int argc, char *argv[]) {
     //testing
     //imports::importGames("meth", "chess.com", "2026/07", "2026/08"); 
     // the dates are on the 1st of the month. So for this one it would be July 1st-August 1st 
-    auto res0 = analysis::analyzeGame("../pgnfiles/doppelgangsterr.pgn", 1, "MVChessAI"); 
+    auto res0 = analysis::analyzeGame("../pgnfiles/doppelgangsterr.pgn", 1, "Khazhatuly, Alikhan"); 
     vector<vector<int>> userevals = res0.second;
     vector<vector<int>> movetimes = res0.first; 
-    std::ofstream outFile("../cheat_movetimes.txt"); 
-    for (const auto& game : movetimes) {
-        for (int t : game) {
-            outFile << t << " ";
-        }
-        outFile << "\n";
-    }
-    outFile.close();
+    
+    
     vector<double> Ufirstmoves; 
     vector<double> Usecondmoves; 
     vector<double> Uthirdmoves; 
@@ -95,20 +89,7 @@ int main(int argc, char *argv[]) {
     vector<double> secondmoves; 
     vector<double> thirdmoves; 
     vector<double> nonemoves;  
-    std::ofstream f1("../clean_movetimes.txt"); 
-    for (const auto& game : res1[1]) {
-        for (int t : game) {
-            f1 << t << " ";
-        }
-        f1 << "\n";
-    }
-    for (const auto& game : res1[2]) {
-        for (int t : game) {
-            f1 << t << " ";
-        }
-        f1 << "\n";
-    }
-    f1.close(); 
+    
     for(vector<int> p : res1[0]){
         double total = p[0]+p[1]+p[2]+p[3]; 
         if(total == 0){
@@ -147,6 +128,29 @@ int main(int argc, char *argv[]) {
     BoosterHandle booster; 
     XGBoosterCreate(NULL, 0, &booster); 
     XGBoosterLoadModel(booster, "../model.json"); 
+    const char* config = "{\"type\": 0, \"training\": false, \"iteration_begin\": 0, \"iteration_end\": 0, \"strict_shape\": false}";
+    double cheatProb = 0.0; 
+    int validgames = 0; 
+
+    for(auto& gametime: movetimes){
+        vector<float> data = getdata(gametime); 
+        DMatrixHandle d; 
+        XGDMatrixCreateFromMat(data.data(), 1, 5, 0.0, &d); 
+
+        bst_ulong const *out_shape;
+        bst_ulong out_dim;
+        float const *out_result;
+        XGBoosterPredictFromDMatrix(booster, d, config, &out_shape, &out_dim, &out_result);
+
+        float gameProb = out_result[0]; 
+        cheatProb += gameProb; 
+        validgames++; 
+        XGDMatrixFree(d); 
+    }
+    if(validgames>0){
+        cout << "average cheat probability " << cheatProb/validgames << endl; 
+    }
+    XGBoosterFree(booster); 
 
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
