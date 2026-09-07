@@ -74,10 +74,10 @@ int main(int argc, char *argv[]) {
         if(total == 0){
             continue; 
         }
-        firstmoves.push_back((round(p[0] * 1000.0) / 1000.0f)/total);
-        secondmoves.push_back((round(p[1] * 1000.0f) / 1000.0f)/total);
-        thirdmoves.push_back((round(p[2] * 1000.0f) / 1000.0f)/total);
-        nonemoves.push_back((round(p[3] * 1000.0f) / 1000.0f)/total);
+        firstmoves.push_back(((round(p[0]/total) * 1000.0) / 1000.0f));
+        secondmoves.push_back(((round(p[1]/total) * 1000.0) / 1000.0f));
+        thirdmoves.push_back(((round(p[2]/total) * 1000.0) / 1000.0f));
+        nonemoves.push_back(((round(p[3]/total) * 1000.0) / 1000.0f));
          
     }
     vector<vector<vector<int>>> res2 = benchmark::analyzeBenchmark("../pgnfiles/benchmarks.pgn", 1, false);
@@ -86,11 +86,10 @@ int main(int argc, char *argv[]) {
         if(total == 0){
             continue; 
         }
-        firstmoves.push_back((round(p[0] * 1000.0) / 1000.0f)/total);
-        secondmoves.push_back((round(p[1] * 1000.0f) / 1000.0f)/total);
-        thirdmoves.push_back((round(p[2] * 1000.0f) / 1000.0f)/total);
-        nonemoves.push_back((round(p[3] * 1000.0f) / 1000.0f)/total);
-         
+        firstmoves.push_back(((round(p[0]/total) * 1000.0) / 1000.0f));
+        secondmoves.push_back(((round(p[1]/total) * 1000.0) / 1000.0f));
+        thirdmoves.push_back(((round(p[2]/total) * 1000.0) / 1000.0f));
+        nonemoves.push_back(((round(p[3]/total) * 1000.0) / 1000.0f));
     }
     sort(firstmoves.begin(), firstmoves.end()); 
     sort(secondmoves.begin(), secondmoves.end()); 
